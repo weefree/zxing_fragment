@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">demo</string>
+    <string name="need_camera_premission">Need Camera Premission</string>
+    <string name="allow">Allow</string>
+    <string name="deny">Deny</string>
+    <string name="permission_camera_denied">Permission Camera Denied</string>
+</resources>
