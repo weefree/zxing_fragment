@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements CaptureFragment.O
     public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
         String resultStr = ResultParser.parseResult(rawResult).toString();
         new AlertDialog.Builder(this)
+                .setTitle(R.string.result)
                 .setMessage(resultStr)
                 .setCancelable(false)
                 .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {

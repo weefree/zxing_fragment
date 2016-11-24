@@ -4,4 +4,7 @@
     <string name="allow">Allow</string>
     <string name="deny">Deny</string>
     <string name="permission_camera_denied">Permission Camera Denied</string>
+    <string name="scan_tag">将二维码放入扫描框内，即可扫描</string>
+    <string name="flash">闪光灯</string>
+    <string name="result">Result</string>
 </resources>

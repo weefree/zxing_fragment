@@ -103,32 +103,22 @@ public class CaptureFragment extends BaseFragment implements SurfaceHolder.Callb
     public void startZXing(){
 
         cameraManager = new CameraManager(this);
+        decodeFormats = null;
+        characterSet = null;
+        handler = null;
 
         viewfinderView = (ViewfinderView) getView().findViewById(R.id.viewfinder_view);
         viewfinderView.setCameraManager(cameraManager);
 
-
-        handler = null;
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-
         beepManager.updatePrefs();
         ambientLightManager.start(cameraManager);
-
         inactivityTimer.onResume();
-
-        decodeFormats = null;
-        characterSet = null;
-
 
         SurfaceView surfaceView = (SurfaceView) getView().findViewById(R.id.preview_view);
         SurfaceHolder surfaceHolder = surfaceView.getHolder();
         if (hasSurface) {
-            // The activity was paused but not stopped, so the surface still exists. Therefore
-            // surfaceCreated() won't be called, so init the camera here.
             initCamera(surfaceHolder);
         } else {
-            // Install the callback and wait for surfaceCreated() to init the camera.
             surfaceHolder.addCallback(this);
         }
     }

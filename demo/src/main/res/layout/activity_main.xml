@@ -23,7 +23,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="36dp"
         android:textColor="#fff"
-        android:text="将二维码放入扫描框内，即可扫描" />
+        android:text="@string/scan_tag" />
 
     <Button android:id="@+id/main_torch_btn"
         android:layout_width="wrap_content"
@@ -32,6 +32,6 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="36dp"
         android:minWidth="120dp"
-        android:text="闪光灯"
+        android:text="@string/flash"
         android:onClick="onClick"/>
 </RelativeLayout>
