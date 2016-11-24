@@ -34,6 +34,7 @@ import com.google.zxing.client.android.share.ShareActivity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -42,6 +43,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,6 +52,7 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -85,6 +89,11 @@ public final class CaptureActivity extends Activity implements IZXing,SurfaceHol
 
   private static final long DEFAULT_INTENT_RESULT_DURATION_MS = 1500L;
   private static final long BULK_MODE_SCAN_DELAY_MS = 1000L;
+
+  private static final int MIN_FRAME_WIDTH = 240;
+  private static final int MIN_FRAME_HEIGHT = 240;
+  private static final int MAX_FRAME_WIDTH = 1200; // = 5/8 * 1920
+  private static final int MAX_FRAME_HEIGHT = 675; // = 5/8 * 1080
 
   private static final String[] ZXING_URLS = { "http://zxing.appspot.com/scan", "zxing://scan/" };
 
@@ -124,6 +133,37 @@ public final class CaptureActivity extends Activity implements IZXing,SurfaceHol
     return handler;
   }
 
+  @Override
+  public Rect getFramingRect() {
+    WindowManager manager = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
+    Display display = manager.getDefaultDisplay();
+    Point screenResolution = new Point();
+    display.getSize(screenResolution);
+    if (screenResolution == null) {
+      // Called early, before init even finished
+      return null;
+    }
+
+    int width = findDesiredDimensionInRange(screenResolution.x, MIN_FRAME_WIDTH, MAX_FRAME_WIDTH);
+    int height = findDesiredDimensionInRange(screenResolution.y, MIN_FRAME_HEIGHT, MAX_FRAME_HEIGHT);
+
+    int leftOffset = (screenResolution.x - width) / 2;
+    int topOffset = (screenResolution.y - height) / 2;
+    Rect framingRect = new Rect(leftOffset, topOffset, leftOffset + width, topOffset + height);
+    return framingRect;
+  }
+
+  private static int findDesiredDimensionInRange(int resolution, int hardMin, int hardMax) {
+    int dim = 5 * resolution / 8; // Target 5/8 of each dimension
+    if (dim < hardMin) {
+      return hardMin;
+    }
+    if (dim > hardMax) {
+      return hardMax;
+    }
+    return dim;
+  }
+
   public CameraManager getCameraManager() {
     return cameraManager;
   }
@@ -156,7 +196,7 @@ public final class CaptureActivity extends Activity implements IZXing,SurfaceHol
     // want to open the camera driver and measure the screen size if we're going to show the help on
     // first launch. That led to bugs where the scanning rectangle was the wrong size and partially
     // off screen.
-    cameraManager = new CameraManager(getApplication());
+    cameraManager = new CameraManager(this);
 
     viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
     viewfinderView.setCameraManager(cameraManager);

@@ -5,21 +5,19 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.zxing.Result;
 import com.google.zxing.client.android.PreferencesActivity;
-import com.google.zxing.client.android.QRFragment;
+import com.google.zxing.client.android.CaptureFragment;
 import com.google.zxing.client.result.ResultParser;
-
-import java.util.ArrayList;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.OnNeverAskAgain;
@@ -29,9 +27,9 @@ import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 
 @RuntimePermissions
-public class MainActivity extends AppCompatActivity implements QRFragment.OnFragmentInteractionListener{
+public class MainActivity extends AppCompatActivity implements CaptureFragment.OnFragmentInteractionListener, View.OnClickListener{
 
-    private QRFragment qrFragment;
+    private CaptureFragment captureFragment;
     private boolean isTorchOn;
 
     @Override
@@ -39,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements QRFragment.OnFrag
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_layout);
         if(toolbar!=null)setSupportActionBar(toolbar);
 
         MainActivityPermissionsDispatcher.showCameraWithCheck(this);
@@ -54,12 +52,6 @@ public class MainActivity extends AppCompatActivity implements QRFragment.OnFrag
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
-            case R.id.action_torch:
-                if(qrFragment!=null){
-                    isTorchOn = !isTorchOn;
-                    qrFragment.openTorch(isTorchOn);
-                }
-                break;
             case R.id.action_setting:
                 Intent intent = new Intent(this, PreferencesActivity.class);
                 startActivity(intent);
@@ -78,10 +70,10 @@ public class MainActivity extends AppCompatActivity implements QRFragment.OnFrag
 
     @NeedsPermission(Manifest.permission.CAMERA)
     void showCamera() {
-        qrFragment = (QRFragment) getSupportFragmentManager().findFragmentById(R.id.main_frame);
-        if(qrFragment==null){
-            qrFragment =  QRFragment.newInstance();
-            getSupportFragmentManager().beginTransaction().add(R.id.main_frame,qrFragment).commitAllowingStateLoss();
+        captureFragment = (CaptureFragment) getSupportFragmentManager().findFragmentById(R.id.main_frame);
+        if(captureFragment ==null){
+            captureFragment =  CaptureFragment.newInstance();
+            getSupportFragmentManager().beginTransaction().add(R.id.main_frame, captureFragment).commitAllowingStateLoss();
         }
     }
 
@@ -123,8 +115,20 @@ public class MainActivity extends AppCompatActivity implements QRFragment.OnFrag
                 .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        if(qrFragment!=null)qrFragment.restartPreviewAfterDelay(0L);
+                        if(captureFragment !=null) captureFragment.restartPreviewAfterDelay(0L);
                     }
                 }).show();
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.main_torch_btn:
+                if(captureFragment !=null){
+                    isTorchOn = !isTorchOn;
+                    captureFragment.openTorch(isTorchOn);
+                }
+                break;
+        }
     }
 }

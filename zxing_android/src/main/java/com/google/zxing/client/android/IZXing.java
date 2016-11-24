@@ -3,6 +3,7 @@ package com.google.zxing.client.android;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.os.Handler;
 
 import com.google.zxing.Result;
@@ -13,11 +14,13 @@ import com.google.zxing.client.android.camera.CameraManager;
  */
 
 public interface IZXing {
-    public ViewfinderView getViewfinderView();
-    public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor);
-    public Activity getActivity();
-    public void drawViewfinder();
-    public CameraManager getCameraManager();
-    public Handler getHandler();
+    ViewfinderView getViewfinderView();
+    void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor);
+    Activity getActivity();
+    void drawViewfinder();
+    CameraManager getCameraManager();
+    Handler getHandler();
+    Rect getFramingRect();
+
 
 }

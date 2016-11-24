@@ -24,7 +24,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import com.google.zxing.PlanarYUVLuminanceSource;
-import com.google.zxing.client.android.ViewUtils;
+import com.google.zxing.client.android.IZXing;
 import com.google.zxing.client.android.camera.open.OpenCamera;
 import com.google.zxing.client.android.camera.open.OpenCameraInterface;
 
@@ -40,11 +40,6 @@ import java.io.IOException;
 public final class CameraManager {
 
   private static final String TAG = CameraManager.class.getSimpleName();
-
-  private static final int MIN_FRAME_WIDTH = 240;
-  private static final int MIN_FRAME_HEIGHT = 240;
-  private static final int MAX_FRAME_WIDTH = 1200; // = 5/8 * 1920
-  private static final int MAX_FRAME_HEIGHT = 675; // = 5/8 * 1080
 
   private final Context context;
   private final CameraConfigurationManager configManager;
@@ -63,9 +58,12 @@ public final class CameraManager {
    */
   private final PreviewCallback previewCallback;
 
-  public CameraManager(Context context) {
-    this.context = context;
-    this.configManager = new CameraConfigurationManager(context);
+  private final IZXing izXing;
+
+  public CameraManager(IZXing izXing) {
+    this.izXing = izXing;
+    this.context = izXing.getActivity().getApplicationContext();
+    this.configManager = new CameraConfigurationManager(this.context);
     previewCallback = new PreviewCallback(configManager);
   }
   
@@ -217,34 +215,10 @@ public final class CameraManager {
       if (camera == null) {
         return null;
       }
-      Point screenResolution = configManager.getScreenResolution();
-      if (screenResolution == null) {
-        // Called early, before init even finished
-        return null;
-      }
-
-      int width = findDesiredDimensionInRange(screenResolution.x, MIN_FRAME_WIDTH, MAX_FRAME_WIDTH);
-      int height = findDesiredDimensionInRange(screenResolution.y, MIN_FRAME_HEIGHT, MAX_FRAME_HEIGHT);
-
-      int leftOffset = (screenResolution.x - width) / 2;
-      int topOffset = (screenResolution.y - height) / 2;
-      framingRect = new Rect(leftOffset, topOffset, leftOffset + width, topOffset + height);
+      framingRect = izXing.getFramingRect();
       Log.d(TAG, "Calculated framing rect: " + framingRect);
     }
     return framingRect;
-  }
-
-
-  
-  private static int findDesiredDimensionInRange(int resolution, int hardMin, int hardMax) {
-    int dim = 5 * resolution / 8; // Target 5/8 of each dimension
-    if (dim < hardMin) {
-      return hardMin;
-    }
-    if (dim > hardMax) {
-      return hardMax;
-    }
-    return dim;
   }
 
   /**

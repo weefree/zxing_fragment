@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -11,13 +13,11 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.Result;
 import com.google.zxing.client.android.camera.CameraManager;
-import com.google.zxing.client.result.ResultParser;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -26,8 +26,11 @@ import java.util.Map;
 /**
  * Created by weefree on 2016/11/23.
  */
-public class QRFragment extends BaseFragment implements SurfaceHolder.Callback,IZXing {
+public class CaptureFragment extends BaseFragment implements SurfaceHolder.Callback,IZXing {
     private static final String TAG = BaseFragment.class.getSimpleName();
+
+    private static final int FRAME_WIDTH_DP = 196;
+    private static final int FRAME_HEIGHT_DP = 196;
 
     private CameraManager cameraManager;
     private ViewfinderView viewfinderView;
@@ -53,10 +56,10 @@ public class QRFragment extends BaseFragment implements SurfaceHolder.Callback,I
         super.onCreate(savedInstanceState);
     }
 
-    public static QRFragment newInstance() {
+    public static CaptureFragment newInstance() {
 
         Bundle args = new Bundle();
-        QRFragment fragment = new QRFragment();
+        CaptureFragment fragment = new CaptureFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -99,7 +102,7 @@ public class QRFragment extends BaseFragment implements SurfaceHolder.Callback,I
 
     public void startZXing(){
 
-        cameraManager = new CameraManager(getActivity().getApplication());
+        cameraManager = new CameraManager(this);
 
         viewfinderView = (ViewfinderView) getView().findViewById(R.id.viewfinder_view);
         viewfinderView.setCameraManager(cameraManager);
@@ -257,6 +260,27 @@ public class QRFragment extends BaseFragment implements SurfaceHolder.Callback,I
     @Override
     public Handler getHandler() {
         return handler;
+    }
+
+    /**
+     * 定义扫描区域
+     * 此Fragment只定义简单扫描UI,复杂UI放在Activity层定义
+     * @return
+     */
+    @Override
+    public Rect getFramingRect() {
+        Point screenSize = ViewUtils.getScreenSize(getActivity());
+        int widthPX = ViewUtils.dip2px(getActivity(),FRAME_WIDTH_DP);
+        int heightPX = ViewUtils.dip2px(getActivity(),FRAME_HEIGHT_DP);
+        int topPX = (screenSize.y-heightPX)/2;
+        int leftPX = (screenSize.x-widthPX)/2;
+        return new Rect(leftPX,topPX,leftPX+widthPX,topPX+heightPX);
+    }
+
+    @Override
+    public void onDestroy() {
+        if(inactivityTimer!=null)inactivityTimer.shutdown();
+        super.onDestroy();
     }
 
     public interface OnFragmentInteractionListener {
